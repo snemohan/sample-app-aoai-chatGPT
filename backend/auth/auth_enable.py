@@ -74,11 +74,11 @@ def decode_jwt_token(token):
         )
         return payload
     except jwt.ExpiredSignatureError as es:
-        raise AuthError({"code": "invalid Signature or Token", "description": f"{es}"}, 401)
+        raise AuthError({"code": "invalid Signature or Token", "description": f"Invalid Signature: {es}"}, 401)
     except (jwt.InvalidAudienceError, jwt.InvalidIssuerError) as e:
         raise AuthError({"code": "invalid Audience or Issuer", "description": f"{e}"}, 401)
     except Exception as ex:
-        raise AuthError({"code": "invalid_header", "description": "Unable to parse authentication token"}, 401)
+        raise AuthError({"code": "invalid_header", "description": f"Unable to parse authentication token: {ex}"}, 401)
 
 
 def requires_auth(roles=[]):
