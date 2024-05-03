@@ -73,11 +73,11 @@ def decode_jwt_token(token):
             issuer="https://login.microsoftonline.com/" + AZURE_TENANT_ID + "/v2.0"
         )
         return payload
-    except jwt.ExpiredSignatureError:
-        raise
+    except jwt.ExpiredSignatureError as es:
+        raise AuthError({"code": "invalid Signature or Token", "description": f"{es}"}, 401)
     except (jwt.InvalidAudienceError, jwt.InvalidIssuerError) as e:
-        raise e
-    except Exception:
+        raise AuthError({"code": "invalid Audience or Issuer", "description": f"{e}"}, 401)
+    except Exception as ex:
         raise AuthError({"code": "invalid_header", "description": "Unable to parse authentication token"}, 401)
 
 
