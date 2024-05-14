@@ -398,7 +398,7 @@ def init_cosmosdb_client():
     return cosmos_conversation_client
 
 
-def get_configured_data_source():
+def get_configured_data_source(application_id, run_id):
     data_source = {}
     query_type = "simple"
     if DATASOURCE_TYPE == "AzureCognitiveSearch":
@@ -412,6 +412,12 @@ def get_configured_data_source():
             query_type = "semantic"
 
         # Set filter
+        # search_filter = (
+        #     "ApplicationID eq " + application_id +
+        #     " and RunID eq " + run_id
+        # )
+
+        search_filter = f"ApplicationID eq {application_id} and RunID eq {run_id}"
         filter = None
         userToken = None
         if AZURE_SEARCH_PERMITTED_GROUPS_COLUMN:
@@ -423,7 +429,10 @@ def get_configured_data_source():
                 )
 
             filter = generateFilterString(userToken)
+            # filter = "ApplicationID eq 116 and RunID eq 113"
+            # filter = "ApplicationID eq 108 and RunID eq 73"
             logging.debug(f"FILTER: {filter}")
+            logging.debug(f"SEARCH FILTER: {search_filter}")
 
         # Set authentication
         authentication = {}
@@ -475,7 +484,7 @@ def get_configured_data_source():
                     else ""
                 ),
                 "role_information": AZURE_OPENAI_SYSTEM_MESSAGE,
-                "filter": filter,
+                "filter": search_filter,
                 "strictness": (
                     int(AZURE_SEARCH_STRICTNESS)
                     if AZURE_SEARCH_STRICTNESS
@@ -515,7 +524,7 @@ def get_configured_data_source():
     return data_source
 
 
-def prepare_model_args(request_body):
+def prepare_model_args(request_body,application_id, run_id):
     request_messages = request_body.get("messages", [])
     messages = []
     if not SHOULD_USE_DATA:
@@ -540,7 +549,7 @@ def prepare_model_args(request_body):
     }
 
     if SHOULD_USE_DATA:
-        model_args["extra_body"] = {"data_sources": [get_configured_data_source()]}
+        model_args["extra_body"] = {"data_sources": [get_configured_data_source(application_id, run_id)]}
 
     model_args_clean = copy.deepcopy(model_args)
     if model_args_clean.get("extra_body"):
@@ -581,7 +590,7 @@ def prepare_model_args(request_body):
     return model_args
 
 
-async def promptflow_request(request):
+async def promptflow_request(request,application_id, run_id):
     try:
         headers = {
             "Content-Type": "application/json",
@@ -593,7 +602,8 @@ async def promptflow_request(request):
             timeout=float(PROMPTFLOW_RESPONSE_TIMEOUT)
         ) as client:
             pf_formatted_obj = convert_to_pf_format(
-                request, PROMPTFLOW_REQUEST_FIELD_NAME, 
+                request, application_id, run_id,
+                PROMPTFLOW_REQUEST_FIELD_NAME, 
                 PROMPTFLOW_RESPONSE_FIELD_NAME
             )
             # NOTE: This only support question and chat_history parameters
@@ -615,15 +625,16 @@ async def promptflow_request(request):
         logging.error(f"An error occurred while making promptflow_request: {e}")
 
 
-async def send_chat_request(request):
+async def send_chat_request(request, application_id, run_id):
     filtered_messages = []
     messages = request.get("messages", [])
+
     for message in messages:
         if message.get("role") != 'tool':
             filtered_messages.append(message)
 
     request['messages'] = filtered_messages
-    model_args = prepare_model_args(request)
+    model_args = prepare_model_args(request,application_id, run_id)
 
     try:
         azure_openai_client = init_openai_client()
@@ -633,13 +644,13 @@ async def send_chat_request(request):
     except Exception as e:
         logging.exception("Exception in send_chat_request")
         raise e
-
+    
     return response, apim_request_id
 
 
-async def complete_chat_request(request_body):
+async def complete_chat_request(request_body, application_id, run_id):
     if USE_PROMPTFLOW and PROMPTFLOW_ENDPOINT and PROMPTFLOW_API_KEY:
-        response = await promptflow_request(request_body)
+        response = await promptflow_request(request_body,application_id, run_id)
         history_metadata = request_body.get("history_metadata", {})
         return format_pf_non_streaming_response(
             response, history_metadata,
@@ -647,7 +658,7 @@ async def complete_chat_request(request_body):
             PROMPTFLOW_CITATIONS_FIELD_NAME
         )
     else:
-        response, apim_request_id = await send_chat_request(request_body)
+        response, apim_request_id = await send_chat_request(request_body,application_id, run_id)
         history_metadata = request_body.get("history_metadata", {})
         return format_non_streaming_response(
             response,
@@ -656,8 +667,8 @@ async def complete_chat_request(request_body):
         )
 
 
-async def stream_chat_request(request_body):
-    response, apim_request_id = await send_chat_request(request_body)
+async def stream_chat_request(request_body, application_id, run_id):
+    response, apim_request_id = await send_chat_request(request_body, application_id, run_id)
     history_metadata = request_body.get("history_metadata", {})
 
     async def generate():
@@ -671,16 +682,16 @@ async def stream_chat_request(request_body):
     return generate()
 
 
-async def conversation_internal(request_body):
+async def conversation_internal(request_body, application_id, run_id):
     try:
         if SHOULD_STREAM:
-            result = await stream_chat_request(request_body)
+            result = await stream_chat_request(request_body, application_id, run_id)
             response = await make_response(format_as_ndjson(result))
             response.timeout = None
             response.mimetype = "application/json-lines"
             return response
         else:
-            result = await complete_chat_request(request_body)
+            result = await complete_chat_request(request_body, application_id, run_id)
             return jsonify(result)
 
     except Exception as ex:
@@ -691,13 +702,13 @@ async def conversation_internal(request_body):
             return jsonify({"error": str(ex)}), 500
 
 
-@bp.route("/conversation", methods=["POST"])
-@requires_auth(roles=["userRole"])
-async def conversation():
+@bp.route("/conversation/<string:application_id>/<string:run_id>", methods=["POST"])
+# @requires_auth(roles=["userRole"])
+async def conversation(application_id:str,run_id:str):
     if not request.is_json:
         return jsonify({"error": "request must be json"}), 415
     request_json = await request.get_json()
-    return await conversation_internal(request_json)
+    return await conversation_internal(request_json,application_id,run_id)
 
 ## Conversation History API ##
 @bp.route("/history/generate", methods=["POST"])
