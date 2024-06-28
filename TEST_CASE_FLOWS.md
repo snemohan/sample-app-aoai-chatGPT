@@ -1,4 +1,4 @@
-# Introduction
+<!-- # Introduction
 Below are some flows to follow to make sure code changes are tested effectivly and efficiently. 
 The goal is to make sure that this is repeatable and can be done by anyone to avoid regressions.
 
@@ -74,4 +74,4 @@ Keep the same environment variables as above, but add the following:
 `AZURE_COSMOSDB_DATABASE`\
 `AZURE_COSMOSDB_ACCOUNT`\
 `AZURE_COSMOSDB_CONVERSATIONS_CONTAINER`\
-`AZURE_COSMOSDB_ACCOUNT_KEY`
+`AZURE_COSMOSDB_ACCOUNT_KEY` -->
