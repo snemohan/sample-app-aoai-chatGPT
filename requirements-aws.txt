@@ -1,0 +1,11 @@
+boto3
+botocore
+Flask
+Hypercorn
+hyperframe
+langchain
+langchain-aws
+langchain-community
+langchain-core
+langchain-text-splitters
+python-dotenv

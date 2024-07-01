@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import jwt
 import os
 import json
+import logging
 from functools import wraps
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
 from cryptography.hazmat.backends import default_backend
@@ -74,10 +75,13 @@ def decode_jwt_token(token):
         )
         return payload
     except jwt.ExpiredSignatureError as es:
+        logging.exception(f"invalid Signature or Token: {es}")
         raise AuthError({"code": "invalid Signature or Token", "description": f"Invalid Signature: {es}"}, 401)
     except (jwt.InvalidAudienceError, jwt.InvalidIssuerError) as e:
+        logging.exception(f"invalid Audience or Issuer: {e}")
         raise AuthError({"code": "invalid Audience or Issuer", "description": f"{e}"}, 401)
     except Exception as ex:
+        logging.exception(f"Unable to parse authentication token: {ex}")
         raise AuthError({"code": "invalid_header", "description": f"Unable to parse authentication token: {ex}"}, 401)
 
 
@@ -90,6 +94,7 @@ def requires_auth(roles=[]):
             try:
                 authorization_header = request.headers.get("Authorization")
                 if not authorization_header or not authorization_header.startswith("Bearer"):
+                    logging.debug("No valid Authorization header found")
                     raise AuthError({"code": "invalid_header", "description": "No valid Authorization header found"}, 401)
 
                 token = authorization_header[len('Bearer '):]
@@ -97,6 +102,7 @@ def requires_auth(roles=[]):
 
                 if roles:
                     if not any(role in decoded_token.get('roles', []) for role in roles):
+                        logging.debug("Insufficient roles")
                         raise AuthError({"code": "insufficient_roles", "description": "Insufficient roles"}, 403)
 
             except AuthError as e:

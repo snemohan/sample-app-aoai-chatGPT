@@ -1,14 +1,15 @@
 [
     {
-        "data_path": "<path to data>",
-        "location": "<azure region, e.g. 'westus2'>",
-        "subscription_id": "<subscription id>",
-        "resource_group": "<resource group name>",
-        "search_service_name": "<search service name to use or create>",
-        "index_name": "<index name to use or create>",
+        "data_path": "https://stdecipherdevuksouth001.blob.core.windows.net/decipher",
+        "location": "UK South",
+        "subscription_id": "3427f6bc-afe3-4c07-8167-74321478dee8",
+        "resource_group": "rg-openai-dev-uksouth-001",
+        "search_service_name": "aisearch-dev-uksouth-001",
+        "index_name": "vector-dev-001",
         "chunk_size": 1024,
         "token_overlap": 128,
-        "semantic_config_name": "default",
-        "language": "<Language to support for example use 'en' for English. Checked supported languages here under lucene - https://learn.microsoft.com/en-us/azure/search/index-add-language-analyzers"
+        "semantic_config_name": "vector-dev-001-semantic-configuration",
+        "language": "en",
+        "vector_config_name": "default"
     }
 ]
