@@ -473,7 +473,7 @@
                             "value": "[parameters('AzureOpenAIStopSequence')]"
                         },
                         {
-                            "name": "AZURE_OPENAI_SYSTEM_MESSAGE",
+                            "name": "SYSTEM_MESSAGE",
                             "value": "[parameters('AzureOpenAISystemMessage')]"
                         },
                         {

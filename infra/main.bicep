@@ -135,7 +135,8 @@ module backend 'core/host/appservice.bicep' = {
       AZURE_OPENAI_TOP_P: openAITopP
       AZURE_OPENAI_MAX_TOKENS: openAIMaxTokens
       AZURE_OPENAI_STOP_SEQUENCE: openAIStopSequence
-      AZURE_OPENAI_SYSTEM_MESSAGE: openAISystemMessage
+      // AZURE_OPENAI_SYSTEM_MESSAGE: openAISystemMessage
+      SYSTEM_MESSAGE: openAISystemMessage
       AZURE_OPENAI_STREAM: openAIStream
     }
   }
@@ -318,7 +319,9 @@ output AZURE_OPENAI_TEMPERATURE int = openAITemperature
 output AZURE_OPENAI_TOP_P int = openAITopP
 output AZURE_OPENAI_MAX_TOKENS int = openAIMaxTokens
 output AZURE_OPENAI_STOP_SEQUENCE string = openAIStopSequence
-output AZURE_OPENAI_SYSTEM_MESSAGE string = openAISystemMessage
+// output AZURE_OPENAI_SYSTEM_MESSAGE string = openAISystemMessage
+output SYSTEM_MESSAGE string = openAISystemMessage
+
 output AZURE_OPENAI_STREAM bool = openAIStream
 
 // Used by prepdocs.py:

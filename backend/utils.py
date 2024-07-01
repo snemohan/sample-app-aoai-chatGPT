@@ -75,13 +75,13 @@ def generateFilterString(userToken):
 
 def format_non_streaming_response(chatCompletion, history_metadata, apim_request_id):
     response_obj = {
-        "id": chatCompletion.id,
-        "model": chatCompletion.model,
-        "created": chatCompletion.created,
-        "object": chatCompletion.object,
+        # "id": chatCompletion.id,
+        # "model": chatCompletion.model,
+        # "created": chatCompletion.created,
+        # "object": chatCompletion.object,
         "choices": [{"messages": []}],
-        "history_metadata": history_metadata,
-        "apim-request-id": apim_request_id,
+        # "history_metadata": history_metadata,
+        # "apim-request-id": apim_request_id,
     }
 
     if len(chatCompletion.choices) > 0:
@@ -100,19 +100,19 @@ def format_non_streaming_response(chatCompletion, history_metadata, apim_request
                     "content": message.content,
                 }
             )
+            print(message.content)
             return response_obj
-
     return {}
 
 def format_stream_response(chatCompletionChunk, history_metadata, apim_request_id):
     response_obj = {
-        "id": chatCompletionChunk.id,
-        "model": chatCompletionChunk.model,
-        "created": chatCompletionChunk.created,
-        "object": chatCompletionChunk.object,
+        # "id": chatCompletionChunk.id,
+        # "model": chatCompletionChunk.model,
+        # "created": chatCompletionChunk.created,
+        # "object": chatCompletionChunk.object,
         "choices": [{"messages": []}],
-        "history_metadata": history_metadata,
-        "apim-request-id": apim_request_id,
+        # "history_metadata": history_metadata,
+        # "apim-request-id": apim_request_id,
     }
 
     if len(chatCompletionChunk.choices) > 0:
@@ -136,8 +136,8 @@ def format_stream_response(chatCompletionChunk, history_metadata, apim_request_i
                         "content": delta.content,
                     }
                     response_obj["choices"][0]["messages"].append(messageObj)
+                    print(delta.content)
                     return response_obj
-
     return {}
 
 

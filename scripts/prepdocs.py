@@ -92,7 +92,7 @@ def upload_documents_to_index(docs, search_client, upload_batch_size=50):
     for i in tqdm(
         range(0, len(to_upload_dicts), upload_batch_size), desc="Indexing Chunks..."
     ):
-        batch = to_upload_dicts[i : i + upload_batch_size]
+        batch = to_upload_dicts[i: i + upload_batch_size]
         results = search_client.upload_documents(documents=batch)
         num_failures = 0
         errors = set()
@@ -206,16 +206,16 @@ if __name__ == "__main__":
     # Use the current user identity to connect to Azure services unless a key is explicitly set for any of them
     azd_credential = (
         AzureDeveloperCliCredential()
-        if args.tenantid == None
+        if args.tenantid is None
         else AzureDeveloperCliCredential(tenant_id=args.tenantid, process_timeout=60)
     )
-    default_creds = azd_credential if args.searchkey == None else None
+    default_creds = azd_credential if args.searchkey is None else None
     search_creds = (
-        default_creds if args.searchkey == None else AzureKeyCredential(args.searchkey)
+        default_creds if args.searchkey is None else AzureKeyCredential(args.searchkey)
     )
     formrecognizer_creds = (
         default_creds
-        if args.formrecognizerkey == None
+        if args.formrecognizerkey is None
         else AzureKeyCredential(args.formrecognizerkey)
     )
 
