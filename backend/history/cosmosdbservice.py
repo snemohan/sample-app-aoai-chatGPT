@@ -2,8 +2,9 @@ import uuid
 from datetime import datetime
 from azure.cosmos.aio import CosmosClient
 from azure.cosmos import exceptions
-  
-class CosmosConversationClient():
+import logging
+
+class CosmosConversationClient:
     
     def __init__(self, cosmosdb_endpoint: str, credential: any, database_name: str, container_name: str, enable_message_feedback: bool = False):
         self.cosmosdb_endpoint = cosmosdb_endpoint
@@ -46,7 +47,7 @@ class CosmosConversationClient():
             
         return True, "CosmosDB client initialized successfully"
 
-    async def create_conversation(self, user_id, title = ''):
+    async def create_conversation(self, user_id, title=''):
         conversation = {
             'id': str(uuid.uuid4()),  
             'type': 'conversation',
@@ -70,26 +71,41 @@ class CosmosConversationClient():
             return False
 
     async def delete_conversation(self, user_id, conversation_id):
-        conversation = await self.container_client.read_item(item=conversation_id, partition_key=user_id)        
-        if conversation:
-            resp = await self.container_client.delete_item(item=conversation_id, partition_key=user_id)
-            return resp
-        else:
-            return True
+        try:
+            conversation = await self.container_client.read_item(item=conversation_id, partition_key=user_id)        
+            if conversation:
+                resp = await self.container_client.delete_item(item=conversation_id, partition_key=user_id)
+                return resp
+            else:
+                return True
+        # try:
+        #     await self.container_client.delete_item(item=conversation_id, partition_key=user_id)
+        #     return True
+        except exceptions.CosmosResourceNotFoundError:
+            return False
+        except exceptions.CosmosHttpResponseError as e:
+            logging.exception(e)
+            return False
 
-        
     async def delete_messages(self, conversation_id, user_id):
-        ## get a list of all the messages in the conversation
         messages = await self.get_messages(user_id, conversation_id)
         response_list = []
         if messages:
             for message in messages:
-                resp = await self.container_client.delete_item(item=message['id'], partition_key=user_id)
-                response_list.append(resp)
+                try:
+                    resp = await self.container_client.delete_item(item=message["id"], partition_key=user_id)
+                    response_list.append(resp)
+                except exceptions.CosmosResourceNotFoundError as err:
+                    logging.exception(err)
+                    continue
+                except exceptions.CosmosHttpResponseError as e:
+                    logging.exception(e)
+                    continue
+            return response_list
+        else:
             return response_list
 
-
-    async def get_conversations(self, user_id, limit, sort_order = 'DESC', offset = 0):
+    async def get_conversations(self, user_id, limit, sort_order='DESC', offset=0):
         parameters = [
             {
                 'name': '@userId',
@@ -132,10 +148,10 @@ class CosmosConversationClient():
         message = {
             'id': uuid,
             'type': 'message',
-            'userId' : user_id,
+            'userId': user_id,
             'createdAt': datetime.utcnow().isoformat(),
             'updatedAt': datetime.utcnow().isoformat(),
-            'conversationId' : conversation_id,
+            'conversationId': conversation_id,
             'role': input_message['role'],
             'content': input_message['content']
         }
@@ -156,12 +172,18 @@ class CosmosConversationClient():
             return False
     
     async def update_message_feedback(self, user_id, message_id, feedback):
-        message = await self.container_client.read_item(item=message_id, partition_key=user_id)
-        if message:
-            message['feedback'] = feedback
-            resp = await self.container_client.upsert_item(message)
-            return resp
-        else:
+        try:
+            message = await self.container_client.read_item(item=message_id, partition_key=user_id)
+            if message:
+                message['feedback'] = feedback
+                resp = await self.container_client.upsert_item(message)
+                return resp
+            else:
+                return False
+        except exceptions.CosmosResourceNotFoundError:
+            return False
+        except exceptions.CosmosHttpResponseError as e:
+            logging.exception(e)
             return False
 
     async def get_messages(self, user_id, conversation_id):
@@ -181,4 +203,3 @@ class CosmosConversationClient():
             messages.append(item)
 
         return messages
-

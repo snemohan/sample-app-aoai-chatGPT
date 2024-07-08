@@ -38,7 +38,7 @@ MINIMUM_SUPPORTED_AZURE_OPENAI_PREVIEW_API_VERSION = "2024-02-15-preview"
 load_dotenv()
 
 # UI configuration (optional)
-UI_TITLE = os.environ.get("UI_TITLE") or "Contoso"
+UI_TITLE = os.environ.get("UI_TITLE") or "Virtual Assistant"
 UI_LOGO = os.environ.get("UI_LOGO")
 UI_CHAT_LOGO = os.environ.get("UI_CHAT_LOGO")
 UI_CHAT_TITLE = os.environ.get("UI_CHAT_TITLE") or "Start chatting"
@@ -538,160 +538,160 @@ def get_configured_data_source():
                 "role_information": AZURE_OPENAI_SYSTEM_MESSAGE,
             },
         }
-    elif DATASOURCE_TYPE == "Elasticsearch":
-        if ELASTICSEARCH_QUERY_TYPE:
-            query_type = ELASTICSEARCH_QUERY_TYPE
+    # elif DATASOURCE_TYPE == "Elasticsearch":
+    #     if ELASTICSEARCH_QUERY_TYPE:
+    #         query_type = ELASTICSEARCH_QUERY_TYPE
 
-        data_source = {
-            "type": "elasticsearch",
-            "parameters": {
-                "endpoint": ELASTICSEARCH_ENDPOINT,
-                "authentication": {
-                    "type": "encoded_api_key",
-                    "encoded_api_key": ELASTICSEARCH_ENCODED_API_KEY,
-                },
-                "index_name": ELASTICSEARCH_INDEX,
-                "fields_mapping": {
-                    "content_fields": (
-                        parse_multi_columns(ELASTICSEARCH_CONTENT_COLUMNS)
-                        if ELASTICSEARCH_CONTENT_COLUMNS
-                        else []
-                    ),
-                    "title_field": (
-                        ELASTICSEARCH_TITLE_COLUMN
-                        if ELASTICSEARCH_TITLE_COLUMN
-                        else None
-                    ),
-                    "url_field": (
-                        ELASTICSEARCH_URL_COLUMN if ELASTICSEARCH_URL_COLUMN else None
-                    ),
-                    "filepath_field": (
-                        ELASTICSEARCH_FILENAME_COLUMN
-                        if ELASTICSEARCH_FILENAME_COLUMN
-                        else None
-                    ),
-                    "vector_fields": (
-                        parse_multi_columns(ELASTICSEARCH_VECTOR_COLUMNS)
-                        if ELASTICSEARCH_VECTOR_COLUMNS
-                        else []
-                    ),
-                },
-                "in_scope": (
-                    True if ELASTICSEARCH_ENABLE_IN_DOMAIN.lower() == "true" else False
-                ),
-                "top_n_documents": (
-                    int(ELASTICSEARCH_TOP_K)
-                    if ELASTICSEARCH_TOP_K
-                    else int(SEARCH_TOP_K)
-                ),
-                "query_type": query_type,
-                "role_information": AZURE_OPENAI_SYSTEM_MESSAGE,
-                "strictness": (
-                    int(ELASTICSEARCH_STRICTNESS)
-                    if ELASTICSEARCH_STRICTNESS
-                    else int(SEARCH_STRICTNESS)
-                ),
-            },
-        }
-    elif DATASOURCE_TYPE == "AzureMLIndex":
-        if AZURE_MLINDEX_QUERY_TYPE:
-            query_type = AZURE_MLINDEX_QUERY_TYPE
+    #     data_source = {
+    #         "type": "elasticsearch",
+    #         "parameters": {
+    #             "endpoint": ELASTICSEARCH_ENDPOINT,
+    #             "authentication": {
+    #                 "type": "encoded_api_key",
+    #                 "encoded_api_key": ELASTICSEARCH_ENCODED_API_KEY,
+    #             },
+    #             "index_name": ELASTICSEARCH_INDEX,
+    #             "fields_mapping": {
+    #                 "content_fields": (
+    #                     parse_multi_columns(ELASTICSEARCH_CONTENT_COLUMNS)
+    #                     if ELASTICSEARCH_CONTENT_COLUMNS
+    #                     else []
+    #                 ),
+    #                 "title_field": (
+    #                     ELASTICSEARCH_TITLE_COLUMN
+    #                     if ELASTICSEARCH_TITLE_COLUMN
+    #                     else None
+    #                 ),
+    #                 "url_field": (
+    #                     ELASTICSEARCH_URL_COLUMN if ELASTICSEARCH_URL_COLUMN else None
+    #                 ),
+    #                 "filepath_field": (
+    #                     ELASTICSEARCH_FILENAME_COLUMN
+    #                     if ELASTICSEARCH_FILENAME_COLUMN
+    #                     else None
+    #                 ),
+    #                 "vector_fields": (
+    #                     parse_multi_columns(ELASTICSEARCH_VECTOR_COLUMNS)
+    #                     if ELASTICSEARCH_VECTOR_COLUMNS
+    #                     else []
+    #                 ),
+    #             },
+    #             "in_scope": (
+    #                 True if ELASTICSEARCH_ENABLE_IN_DOMAIN.lower() == "true" else False
+    #             ),
+    #             "top_n_documents": (
+    #                 int(ELASTICSEARCH_TOP_K)
+    #                 if ELASTICSEARCH_TOP_K
+    #                 else int(SEARCH_TOP_K)
+    #             ),
+    #             "query_type": query_type,
+    #             "role_information": AZURE_OPENAI_SYSTEM_MESSAGE,
+    #             "strictness": (
+    #                 int(ELASTICSEARCH_STRICTNESS)
+    #                 if ELASTICSEARCH_STRICTNESS
+    #                 else int(SEARCH_STRICTNESS)
+    #             ),
+    #         },
+    #     }
+    # elif DATASOURCE_TYPE == "AzureMLIndex":
+    #     if AZURE_MLINDEX_QUERY_TYPE:
+    #         query_type = AZURE_MLINDEX_QUERY_TYPE
 
-        data_source = {
-            "type": "azure_ml_index",
-            "parameters": {
-                "name": AZURE_MLINDEX_NAME,
-                "version": AZURE_MLINDEX_VERSION,
-                "project_resource_id": AZURE_ML_PROJECT_RESOURCE_ID,
-                "fieldsMapping": {
-                    "content_fields": (
-                        parse_multi_columns(AZURE_MLINDEX_CONTENT_COLUMNS)
-                        if AZURE_MLINDEX_CONTENT_COLUMNS
-                        else []
-                    ),
-                    "title_field": (
-                        AZURE_MLINDEX_TITLE_COLUMN
-                        if AZURE_MLINDEX_TITLE_COLUMN
-                        else None
-                    ),
-                    "url_field": (
-                        AZURE_MLINDEX_URL_COLUMN if AZURE_MLINDEX_URL_COLUMN else None
-                    ),
-                    "filepath_field": (
-                        AZURE_MLINDEX_FILENAME_COLUMN
-                        if AZURE_MLINDEX_FILENAME_COLUMN
-                        else None
-                    ),
-                    "vector_fields": (
-                        parse_multi_columns(AZURE_MLINDEX_VECTOR_COLUMNS)
-                        if AZURE_MLINDEX_VECTOR_COLUMNS
-                        else []
-                    ),
-                },
-                "in_scope": (
-                    True if AZURE_MLINDEX_ENABLE_IN_DOMAIN.lower() == "true" else False
-                ),
-                "top_n_documents": (
-                    int(AZURE_MLINDEX_TOP_K)
-                    if AZURE_MLINDEX_TOP_K
-                    else int(SEARCH_TOP_K)
-                ),
-                "query_type": query_type,
-                "role_information": AZURE_OPENAI_SYSTEM_MESSAGE,
-                "strictness": (
-                    int(AZURE_MLINDEX_STRICTNESS)
-                    if AZURE_MLINDEX_STRICTNESS
-                    else int(SEARCH_STRICTNESS)
-                ),
-            },
-        }
-    elif DATASOURCE_TYPE == "Pinecone":
-        query_type = "vector"
+    #     data_source = {
+    #         "type": "azure_ml_index",
+    #         "parameters": {
+    #             "name": AZURE_MLINDEX_NAME,
+    #             "version": AZURE_MLINDEX_VERSION,
+    #             "project_resource_id": AZURE_ML_PROJECT_RESOURCE_ID,
+    #             "fieldsMapping": {
+    #                 "content_fields": (
+    #                     parse_multi_columns(AZURE_MLINDEX_CONTENT_COLUMNS)
+    #                     if AZURE_MLINDEX_CONTENT_COLUMNS
+    #                     else []
+    #                 ),
+    #                 "title_field": (
+    #                     AZURE_MLINDEX_TITLE_COLUMN
+    #                     if AZURE_MLINDEX_TITLE_COLUMN
+    #                     else None
+    #                 ),
+    #                 "url_field": (
+    #                     AZURE_MLINDEX_URL_COLUMN if AZURE_MLINDEX_URL_COLUMN else None
+    #                 ),
+    #                 "filepath_field": (
+    #                     AZURE_MLINDEX_FILENAME_COLUMN
+    #                     if AZURE_MLINDEX_FILENAME_COLUMN
+    #                     else None
+    #                 ),
+    #                 "vector_fields": (
+    #                     parse_multi_columns(AZURE_MLINDEX_VECTOR_COLUMNS)
+    #                     if AZURE_MLINDEX_VECTOR_COLUMNS
+    #                     else []
+    #                 ),
+    #             },
+    #             "in_scope": (
+    #                 True if AZURE_MLINDEX_ENABLE_IN_DOMAIN.lower() == "true" else False
+    #             ),
+    #             "top_n_documents": (
+    #                 int(AZURE_MLINDEX_TOP_K)
+    #                 if AZURE_MLINDEX_TOP_K
+    #                 else int(SEARCH_TOP_K)
+    #             ),
+    #             "query_type": query_type,
+    #             "role_information": AZURE_OPENAI_SYSTEM_MESSAGE,
+    #             "strictness": (
+    #                 int(AZURE_MLINDEX_STRICTNESS)
+    #                 if AZURE_MLINDEX_STRICTNESS
+    #                 else int(SEARCH_STRICTNESS)
+    #             ),
+    #         },
+    #     }
+    # elif DATASOURCE_TYPE == "Pinecone":
+    #     query_type = "vector"
 
-        data_source = {
-            "type": "pinecone",
-            "parameters": {
-                "environment": PINECONE_ENVIRONMENT,
-                "authentication": {"type": "api_key", "key": PINECONE_API_KEY},
-                "index_name": PINECONE_INDEX_NAME,
-                "fields_mapping": {
-                    "content_fields": (
-                        parse_multi_columns(PINECONE_CONTENT_COLUMNS)
-                        if PINECONE_CONTENT_COLUMNS
-                        else []
-                    ),
-                    "title_field": (
-                        PINECONE_TITLE_COLUMN if PINECONE_TITLE_COLUMN else None
-                    ),
-                    "url_field": PINECONE_URL_COLUMN if PINECONE_URL_COLUMN else None,
-                    "filepath_field": (
-                        PINECONE_FILENAME_COLUMN if PINECONE_FILENAME_COLUMN else None
-                    ),
-                    "vector_fields": (
-                        parse_multi_columns(PINECONE_VECTOR_COLUMNS)
-                        if PINECONE_VECTOR_COLUMNS
-                        else []
-                    ),
-                },
-                "in_scope": (
-                    True if PINECONE_ENABLE_IN_DOMAIN.lower() == "true" else False
-                ),
-                "top_n_documents": (
-                    int(PINECONE_TOP_K) if PINECONE_TOP_K else int(SEARCH_TOP_K)
-                ),
-                "strictness": (
-                    int(PINECONE_STRICTNESS)
-                    if PINECONE_STRICTNESS
-                    else int(SEARCH_STRICTNESS)
-                ),
-                "query_type": query_type,
-                "role_information": AZURE_OPENAI_SYSTEM_MESSAGE,
-            },
-        }
-    else:
-        raise Exception(
-            f"DATASOURCE_TYPE is not configured or unknown: {DATASOURCE_TYPE}"
-        )
+    #     data_source = {
+    #         "type": "pinecone",
+    #         "parameters": {
+    #             "environment": PINECONE_ENVIRONMENT,
+    #             "authentication": {"type": "api_key", "key": PINECONE_API_KEY},
+    #             "index_name": PINECONE_INDEX_NAME,
+    #             "fields_mapping": {
+    #                 "content_fields": (
+    #                     parse_multi_columns(PINECONE_CONTENT_COLUMNS)
+    #                     if PINECONE_CONTENT_COLUMNS
+    #                     else []
+    #                 ),
+    #                 "title_field": (
+    #                     PINECONE_TITLE_COLUMN if PINECONE_TITLE_COLUMN else None
+    #                 ),
+    #                 "url_field": PINECONE_URL_COLUMN if PINECONE_URL_COLUMN else None,
+    #                 "filepath_field": (
+    #                     PINECONE_FILENAME_COLUMN if PINECONE_FILENAME_COLUMN else None
+    #                 ),
+    #                 "vector_fields": (
+    #                     parse_multi_columns(PINECONE_VECTOR_COLUMNS)
+    #                     if PINECONE_VECTOR_COLUMNS
+    #                     else []
+    #                 ),
+    #             },
+    #             "in_scope": (
+    #                 True if PINECONE_ENABLE_IN_DOMAIN.lower() == "true" else False
+    #             ),
+    #             "top_n_documents": (
+    #                 int(PINECONE_TOP_K) if PINECONE_TOP_K else int(SEARCH_TOP_K)
+    #             ),
+    #             "strictness": (
+    #                 int(PINECONE_STRICTNESS)
+    #                 if PINECONE_STRICTNESS
+    #                 else int(SEARCH_STRICTNESS)
+    #             ),
+    #             "query_type": query_type,
+    #             "role_information": AZURE_OPENAI_SYSTEM_MESSAGE,
+    #         },
+    #     }
+    # else:
+    #     raise Exception(
+    #         f"DATASOURCE_TYPE is not configured or unknown: {DATASOURCE_TYPE}"
+    #     )
 
     if "vector" in query_type.lower() and DATASOURCE_TYPE != "AzureMLIndex":
         embeddingDependency = {}
@@ -1082,12 +1082,12 @@ async def delete_conversation():
             raise Exception("CosmosDB is not configured or not working")
 
         ## delete the conversation messages from cosmos first
-        deleted_messages = await cosmos_conversation_client.delete_messages(
+        await cosmos_conversation_client.delete_messages(
             conversation_id, user_id
         )
 
         ## Now delete the conversation
-        deleted_conversation = await cosmos_conversation_client.delete_conversation(
+        await cosmos_conversation_client.delete_conversation(
             user_id, conversation_id
         )
 
